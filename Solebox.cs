@@ -110,7 +110,7 @@ namespace MARTOAIO
                 if (!proxyless)
                 {
                     //string folderLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                     path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
+                    path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
 
                     proxys = System.IO.File.ReadAllLines(path);
 
@@ -532,8 +532,6 @@ namespace MARTOAIO
                     Program.printMsg("Task " + id + "Stringbuilder time: " + watch.ElapsedMilliseconds + " ms", "Red");
                     watch.Restart();
 
-
-
                     string srcsize = await solerequests.Get(sizeUrldone, client, url);
                     watch.Stop();
                     Program.printMsg("Task " + id + "First get time: " + watch.ElapsedMilliseconds + " ms", "Red");
@@ -584,21 +582,20 @@ namespace MARTOAIO
                 {
                     bool atc = false;
 
-
+                    string referer;
+                    Console.WriteLine(postData);
                     string target = "https://www.solebox.com/en_ES/add-product?format=ajax";
+                    if (url == "") referer = "https://www.solebox.com/en_ES";
+                    else referer = url;
 
-                    string referer = "https://www.solebox.com/en_ES";
+            //string accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+            // string page = requests.Get(url, referer, cookies, false, accept, proxy);
 
-                    //string accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
-                    // string page = requests.Get(url, referer, cookies, false, accept, proxy);
+            //await solerequests.Get(referer, client);
 
-                    //await solerequests.Get(referer, client);
-                    string added = "";
-                    if (url != ""){
-                        added = await solerequests.Post(target, postData, false, client, url);
-                        
-                    }
-                    else added = await solerequests.Post(target, postData, false, client, referer);
+                    
+                     string added = await solerequests.Post(target, postData, false, client, referer);
+              
 
                     if (added.Contains("Product added to cart"))
                     {
@@ -606,7 +603,8 @@ namespace MARTOAIO
                     }
                     else
                     {
-                        Program.printMsg("Task " + id + "---ATC FAILED RESONSE :" + added, "Red");
+                        Program.printMsg("Task " + id + "---ATC FAILED RESONSE :" , "Red");
+                        Console.WriteLine(added);
                         return (false, "", "");
 
                      }
@@ -719,10 +717,10 @@ namespace MARTOAIO
             await solerequests.Post(selectShipping, "", false, client, referer, false);
 
             //Console.WriteLine(responseups);
-
+            
             string shipp = GenShipping(token, UUID, ref Info);
 
-            string responseshipping = await solerequests.Post(targetship, shipp, false, client, referer);
+            string responseshipping = await solerequests.Post(targetship, shipp, false, client, referer, false);
 
             // Console.WriteLine(responseshipping);
             Program.printMsg("Task " + id + "---SHIPPING SUBMITTED!!!");

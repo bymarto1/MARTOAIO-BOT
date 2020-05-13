@@ -105,7 +105,6 @@ namespace MARTOAIO
                     request.Headers.Add("ContentType", "application/x-www-form-urlencoded; charset=UTF-8");
                     //request.Headers.Add("content-length", postData.Length.ToString());
                     //request.Headers.Add("content-type", "application/x-www-form-urlencoded; charset=UTF-8");
-
                     if (referer != "")
                     {
                         request.Headers.Add("referer", referer);
@@ -113,7 +112,6 @@ namespace MARTOAIO
                     request.Headers.Add("sec-fetch-dest", "empty");
                     request.Headers.Add("sec-fetch-mode", "cors");
                     request.Headers.Add("sec-fetch-site", "same-origin");
-
                     //request.Headers.Add("UserAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36");
                     request.Headers.Add("x-requested-with", "XMLHttpRequest");
 
@@ -121,7 +119,6 @@ namespace MARTOAIO
                     using (var stringContent = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded"))
                     {
                         request.Content = stringContent;
-
                         response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
                     }
@@ -132,7 +129,6 @@ namespace MARTOAIO
 
             }
 
-                //Console.
 
             catch (WebException webExcp)
             {
