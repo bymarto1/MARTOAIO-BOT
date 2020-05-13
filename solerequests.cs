@@ -29,8 +29,10 @@ namespace MARTOAIO
                     reqmes.Headers.Add("accept-language", "es,ca;q=0.9,en;q=0.8,de;q=0.7");
                     reqmes.Headers.Add("sec-fetch-dest", "empty");
                     reqmes.Headers.Add("sec-fetch-mode", "cors");
-                    reqmes.Headers.Add("sec-fetch-site", "application/json");
-
+                    reqmes.Headers.Add("sec-fetch-site", "same-origin");
+                    if(referer !="") reqmes.Headers.Add("referer", referer);
+                   
+                  //  reqmes.Headers.TryAddWithoutValidation("content-type", "application/json");
                     //reqmes.Headers.Add("sec-fetch-user", "?1");
                     //  reqmes.Headers.Add("Cache-Control", "no-cache");
                     //reqmes.Headers.Add("UserAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36");

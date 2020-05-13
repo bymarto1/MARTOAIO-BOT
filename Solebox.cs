@@ -284,7 +284,7 @@ namespace MARTOAIO
                 client.DefaultRequestHeaders.Add("authority", "www.solebox.com");
                 client.DefaultRequestHeaders.Add("origin", "https://www.solebox.com");
                 client.DefaultRequestHeaders.Add("scheme", "https");
-               // client.DefaultRequestHeaders.Add("cache-control", "max-age=0");
+                client.DefaultRequestHeaders.Add("cache-control", "max-age=0");
                 client.DefaultRequestHeaders.Add("accept", "application/json, text/javascript, */*; q=0.01");
                 //client.DefaultRequestHeaders.Add("content-type", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(30);
@@ -340,17 +340,16 @@ namespace MARTOAIO
                 }
                 watch.Stop();
                 Console.WriteLine($"CF time: {watch.ElapsedMilliseconds} ms");
-                watch.Restart();
-
+                watch.Start();
 
                 //  await Login(id, client, account);
 
-                //string loginpage = "view-source:https://www.solebox.com/en_ES/p/nike-blazer_mid_%2777_vintage_%22sketch_black%22-white%2Fblack-platinum_tint-01830271.html";
-                //string klk = await solerequests.Get(loginpage, client);
+                string loginpage = "https://www.solebox.com/en_ES";
+                await solerequests.Get(loginpage, client,loginpage ,false);
                 //Console.WriteLine(klk);
-                watch.Stop();
-                Program.printMsg("First login to get px time:" + watch.ElapsedMilliseconds + " ms");
-                watch.Restart();
+                //watch.Stop();
+                //Program.printMsg("First login to get px time:" + watch.ElapsedMilliseconds + " ms");
+                //watch.Restart();
 
                 //Console.WriteLine(login);
                 if (dataatc == "")
@@ -437,7 +436,7 @@ namespace MARTOAIO
                 MaxTries = 10,
                 ClearanceDelay = 3000
             };
-
+            if(url =="") url = "https://www.solebox.com/en_ES";
             var target = new Uri(url);
 
             CloudflareSolverRe.Types.SolveResult result = new CloudflareSolverRe.Types.SolveResult();
@@ -490,10 +489,12 @@ namespace MARTOAIO
             }
             else
             {
-               /* Console.WriteLine("-------------------");
-                Console.WriteLine(result.Cookies.AsHeaderString());
+                /* Console.WriteLine("-------------------");
+                 Console.WriteLine(result.Cookies.AsHeaderString());
+                 Console.WriteLine("-------------------");
+                 */
                 Console.WriteLine("-------------------");
-                */
+                Console.WriteLine(result.DetectResult.ToString());
 
                 if (result.Cookies.AsHeaderString() != "")
                 {
@@ -508,74 +509,8 @@ namespace MARTOAIO
 
         }
 
-        public static async Task Login( string id , HttpClient client, string account)
-        {
-            try
-            {
-                //   string mainpage = "https://www.solebox.com/en_ES";
-
-                //   await solerequests.Get(mainpage, client);
-
-                string referer = "https://www.solebox.com/en_ES/login";
-                Program.printMsg("Task " + id + "---Loggin in...");
-                string loginpage = "https://www.solebox.com/en_ES/login?rurl=1";
-
-                string loginsrc = await solerequests.Get(loginpage, client);
-               // string loginsrc = "klk";
-                
-               // Console.WriteLine(loginsrc);
-                String token = new Regex("<input type=\"hidden\" name=\"csrf_token\" value=\"(.+?)\"").Match(loginsrc).Groups[1].Value;
-                if (token == "")
-                {
-                    Console.WriteLine("CSRF TOKEN NOT FOUND ");
-                }
-
-                string[] accountInfo = account.Split(":");
-
-                string email = accountInfo[0];
-                string pw = accountInfo[1];
-              
-
-                Program.printMsg("Task " + id + "---Entering account : " + email);
-
-                StringBuilder loginInfo = new StringBuilder();
-                loginInfo.Append("dwfrm_profile_customer_email=");
-                loginInfo.Append(email);
-                loginInfo.Append("&dwfrm_profile_login_password=");
-                loginInfo.Append(pw);
-                loginInfo.Append("&csrf_token=");
-                loginInfo.Append(Uri.EscapeDataString(token));
-                string postData = loginInfo.ToString();
-                string submitLoginUrl = "https://www.solebox.com/en_ES/authentication?rurl=1&format=ajax";
-                string logged = await solerequests.Post(submitLoginUrl, postData, false, client, referer);
-                //Console.WriteLine(logged);
-                if (logged.Contains("\"userLoginStatus\": true"))
-                {
-                    Program.printMsg("Task " + id + "---Logged in!!!", "Green");
-
-                }
-                else Program.printMsg("Task " + id + "---CAN'T LOG IN", "Red");
 
 
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("{0} First exception caught.", e);
-              }
-
-        }
-
-
-
-
-
-
-
-
-        
-        
-        
                 public static async Task<string> GenatcAsync(string id, string url, string pid, string size, string productname, HttpClient client)
                 {
 
@@ -590,7 +525,9 @@ namespace MARTOAIO
                     sizeUrl.Append("&format=ajax");
                     string sizeUrldone = sizeUrl.ToString();
 
-            Console.WriteLine(sizeUrldone);
+                    Console.WriteLine(sizeUrldone);
+
+            
                     watch.Stop();
                     Program.printMsg("Task " + id + "Stringbuilder time: " + watch.ElapsedMilliseconds + " ms", "Red");
                     watch.Restart();
@@ -612,7 +549,8 @@ namespace MARTOAIO
                     {
                         Console.WriteLine("Task {0}---ITEM IS SOLD OUT!", id);
                         return "OOS";
-                    };
+                    }
+                    else if (srcsize.Contains("//captcha.px-cdn.ne"))return "";
 
                     string variant = new Regex("\"id\": \"(.+?)\"").Match(srcsize).Groups[1].Value;
                     watch.Stop();
@@ -649,7 +587,7 @@ namespace MARTOAIO
 
                     string target = "https://www.solebox.com/en_ES/add-product?format=ajax";
 
-                   string referer = "https://www.solebox.com/en_ES";
+                    string referer = "https://www.solebox.com/en_ES";
 
                     //string accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
                     // string page = requests.Get(url, referer, cookies, false, accept, proxy);
@@ -708,8 +646,8 @@ namespace MARTOAIO
             //Console.WriteLine(source);
 
             Program.printMsg("Task " + id + "---UUID FOUND!");
-            Console.WriteLine("UUID : ");
-            Console.WriteLine(UUID);
+           // Console.WriteLine("UUID : ");
+           // Console.WriteLine(UUID);
 
             //VALIDATION OF SHIPPING, ITS A POST REQUEST WITH THE BASIC ADRESS , DOESN'T NEED IT TO CHECKOUT
 
@@ -866,6 +804,65 @@ namespace MARTOAIO
 
 
         }
+
+        public static async Task Login(string id, HttpClient client, string account)
+        {
+            try
+            {
+                //   string mainpage = "https://www.solebox.com/en_ES";
+
+                //   await solerequests.Get(mainpage, client);
+
+                string referer = "https://www.solebox.com/en_ES/login";
+                Program.printMsg("Task " + id + "---Loggin in...");
+                string loginpage = "https://www.solebox.com/en_ES/login?rurl=1";
+
+                string loginsrc = await solerequests.Get(loginpage, client);
+                // string loginsrc = "klk";
+
+                // Console.WriteLine(loginsrc);
+                String token = new Regex("<input type=\"hidden\" name=\"csrf_token\" value=\"(.+?)\"").Match(loginsrc).Groups[1].Value;
+                if (token == "")
+                {
+                    Console.WriteLine("CSRF TOKEN NOT FOUND ");
+                }
+
+                string[] accountInfo = account.Split(":");
+
+                string email = accountInfo[0];
+                string pw = accountInfo[1];
+
+
+                Program.printMsg("Task " + id + "---Entering account : " + email);
+
+                StringBuilder loginInfo = new StringBuilder();
+                loginInfo.Append("dwfrm_profile_customer_email=");
+                loginInfo.Append(email);
+                loginInfo.Append("&dwfrm_profile_login_password=");
+                loginInfo.Append(pw);
+                loginInfo.Append("&csrf_token=");
+                loginInfo.Append(Uri.EscapeDataString(token));
+                string postData = loginInfo.ToString();
+                string submitLoginUrl = "https://www.solebox.com/en_ES/authentication?rurl=1&format=ajax";
+                string logged = await solerequests.Post(submitLoginUrl, postData, false, client, referer);
+                //Console.WriteLine(logged);
+                if (logged.Contains("\"userLoginStatus\": true"))
+                {
+                    Program.printMsg("Task " + id + "---Logged in!!!", "Green");
+
+                }
+                else Program.printMsg("Task " + id + "---CAN'T LOG IN", "Red");
+
+
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("{0} First exception caught.", e);
+            }
+
+        }
+
 
 
 
