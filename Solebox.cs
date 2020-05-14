@@ -18,62 +18,65 @@ namespace MARTOAIO
         {
             System.Net.ServicePointManager.DefaultConnectionLimit = 50;
 
-            string url = "", size = "", variant = "", method, productname = "", dataatc = "", pid;
+            string url = "", size = "", variant = "", method , dataatc = "", mode ,pid;
             int ntasks;
-            bool proxyless = false;
-            bool fast = false;
 
 
-            Console.WriteLine("Do you want to use size or variant? (u) (v)");
+            Console.WriteLine("Do you want to use url or variant? (u) (v)  (ONLY WORKS URL AT THE MOMENT)");
             method = Console.ReadLine();
 
-            if (method == "u")
+            if (method != "v")
             {
                 Console.WriteLine("Insert the url here:");
                 url = Console.ReadLine();
 
-                Console.WriteLine("Insert the size (eu) :");
-                size = Console.ReadLine();
+            //    Console.WriteLine("Insert the size (eu) :");
+             //   size = Console.ReadLine();
                 pid = url.Substring(url.Length - 13 );
                 pid = pid.Substring(0, 8);
-                printMsg(pid, "Red");
+                await printMsgAsync("pid: " + pid, "Green");
+
             }
             else
             {
                 Console.WriteLine("Insert variant here:");
                 variant = Console.ReadLine();
                 pid = variant.Substring(0, 8);
-                printMsg(pid, "Red");
-                Console.WriteLine("Insert the size (eu) :");
-                size = Console.ReadLine();
+                await printMsgAsync("pid: " + pid, "Green");
+                // Console.WriteLine("Insert the size (eu) :");
+                //size = Console.ReadLine();
+
+                StringBuilder data = new StringBuilder();
+                data.Append("pid=");
+                data.Append(variant);
+                data.Append("&options=%5B%7B%22optionId%22%3A%22212%22%2C%22selectedValueId%22%3A%22");
+                data.Append(size);
+                data.Append("%22%7D%5D&quantity=1");
+                dataatc = data.ToString();
 
             }
 
 
-            Console.WriteLine("How many tasks do you want to run?");
-            ntasks = Convert.ToInt32(Console.ReadLine());
+           // Console.WriteLine("How many tasks do you want to run?");
+           // ntasks = Convert.ToInt32(Console.ReadLine());
 
-            Console.WriteLine("Do u want paypal or cc link?   (pp) (cc)");
-            string payment = Console.ReadLine();
-
-            Console.WriteLine("Wich mode u want Fast or Safe?   (f) (s)");
-            string mode = Console.ReadLine();
+            // Console.WriteLine("Do u want paypal or cc link?   (pp) (cc)");
+            //string payment = Console.ReadLine();
+            string payment = "pp";
 
 
-
-            Console.WriteLine("Do u want to use proxies? (y) (n)");
-            string usingproxy = Console.ReadLine();
-
-            if (usingproxy == "n") proxyless = true;
-            if (mode == "f") fast = true;
+           // Console.WriteLine("Wich mode u want Fast or Safe?   (f) (s)");
+           // mode = Console.ReadLine();
 
 
-            while (payment != "pp" && payment != "cc")
-            {
-                Console.WriteLine("BRUH , we will try it again, type pp for paypal or cc for credit card");
-                Console.WriteLine("Do u want paypal or credit card link ?  (pp) (cc) ");
-                payment = Console.ReadLine();
-            }
+
+           // Console.WriteLine("Do u want to use proxies? (y) (n)");
+           // string usingproxy = Console.ReadLine();
+
+           // if (usingproxy == "n") proxyless = true;
+
+
+
 
 
 
@@ -83,16 +86,26 @@ namespace MARTOAIO
             try
             {
 
-                if (method == "v")
+                //READS ALL THE TASKS
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "tasks.csv");
+                string[] readlinestasks = System.IO.File.ReadAllLines(path);
+                Console.WriteLine(readlinestasks.Length);
+                string[][] tasks = new string[readlinestasks.Length-1][];
+                for(int i = 1; i < readlinestasks.Length; ++i)
                 {
-                    StringBuilder data = new StringBuilder();
-                    data.Append("pid=");
-                    data.Append(variant);
-                    data.Append("&options=%5B%7B%22optionId%22%3A%22212%22%2C%22selectedValueId%22%3A%22");
-                    data.Append(size);
-                    data.Append("%22%7D%5D&quantity=1");
-                    dataatc = data.ToString();
+                    tasks[i-1] = readlinestasks[i].Split(";");
                 }
+
+                
+                for (int i = 0; i < readlinestasks.Length- 1; ++i)
+                {   for(int j = 0; j<3; ++j)
+                    {
+                        Console.WriteLine(tasks[i][j]);
+                    }
+                    
+
+                }
+                
 
 
                 var myJsonString = File.ReadAllText("profile.json");
@@ -101,33 +114,31 @@ namespace MARTOAIO
                 Console.WriteLine("perfil llegit");
 
 
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "Soleboxaccounts.txt");
+                path = Path.Combine(Directory.GetCurrentDirectory(), "Soleboxaccounts.txt");
                 string [] accounts =  System.IO.File.ReadAllLines(path);
 
 
 
                 string[] proxys;
-                if (!proxyless)
-                {
+    
                     //string folderLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                     path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
 
                     proxys = System.IO.File.ReadAllLines(path);
 
-                  //  System.Console.WriteLine("Contents of proxies.txt = ");
+                //  System.Console.WriteLine("Contents of proxies.txt = ");
 
-                    /*   foreach (string proxy in proxys)
-                       {
-                           // Use a tab to indent each line of the file.
-                           Console.WriteLine("\t" + proxy);
-                       }
-                       */
-                }
-                else proxys = new string[] { "" };
+                /*   foreach (string proxy in proxys)
+                   {
+                       // Use a tab to indent each line of the file.
+                       Console.WriteLine("\t" + proxy);
+                   }
+                   */
 
 
 
 
+                ntasks = readlinestasks.Length - 1;
                 Task[] taskList = new Task[ntasks];
 
                 //Console.WriteLine(pid);
@@ -136,14 +147,18 @@ namespace MARTOAIO
                 int nproxies = proxys.Length;
 
                 Random r = new Random();
-
+                Proxy proxytask = new Program.Proxy("");
                 List<Task> TaskList = new List<Task>(ntasks);
                 for (int i = 0; i < ntasks; ++i)
                 {
-
-                    Program.Proxy proxytask = new Program.Proxy(proxys[r.Next(nproxies)]);
+                    mode = tasks[i][0];
+                    if (tasks[i][1] == "y")
+                    {
+                        proxytask = new Program.Proxy(proxys[r.Next(nproxies)]);
+                    }
+                    size = tasks[i][2];
                     Console.WriteLine("Creating task {0}", i);
-                    var LastTask = SoleboxtaskAsync(i.ToString(), url, pid, size, payment, dataatc, Info, proxytask, fast);
+                    var LastTask = SoleboxtaskAsync(i.ToString(), url, pid, size, payment, dataatc, Info, proxytask, mode);
                     TaskList.Add(LastTask);
                 }
 
@@ -256,20 +271,17 @@ namespace MARTOAIO
 
         }
 
-        public static async Task<int> SoleboxtaskAsync(string id, string url, string pidd, string size, string payment, string dataatc, Profile Info, Proxy proxy, bool fast)
+        public static async Task<int> SoleboxtaskAsync(string id, string url, string pidd, string size, string payment, string dataatc, Profile Info, Proxy proxy, string mode)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             bool atc = false;
-            //CookieContainer cookiespay = new CookieContainer();
             string productname = "";
             string imageurl = "";
-           // int state = -1;
             int retry = 0;
 
 
             try
             {
-
 
                 HttpClientHandler req = new HttpClientHandler()
                 {
@@ -278,7 +290,6 @@ namespace MARTOAIO
                 };
 
                 HttpClient client = new HttpClient(req);
-
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");
                 client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");
                 client.DefaultRequestHeaders.Add("authority", "www.solebox.com");
@@ -289,7 +300,7 @@ namespace MARTOAIO
                 //client.DefaultRequestHeaders.Add("content-type", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(30);
                 //  cloudflare(url, new WebProxy(), client, handler);
-                if (fast == false)
+                if (mode == "fast")
                 {
                     if (proxy.proxyless == false)
                     {
@@ -298,7 +309,8 @@ namespace MARTOAIO
                         string password = proxy.password;
                         myProxy.Credentials = new NetworkCredential(username, password);
                         req.Proxy = myProxy;
-                        CookieContainer cfcookies = cloudflare(url, myProxy, client , req , false);
+
+                        CookieContainer cfcookies = cloudflare("https://www.solebox.com/en_ES", myProxy, client , req , false);
                         //req.CookieContainer = cfcookies;
 
                         
@@ -314,10 +326,16 @@ namespace MARTOAIO
                     else
                     {
                         req.UseDefaultCredentials = true;
-                        CookieContainer cfcookies = cloudflare(url, new WebProxy(), client, req, true);
+                        CookieContainer cfcookies = cloudflare("https://www.solebox.com/en_ES", new WebProxy(), client, req, true);
                        // req.CookieContainer = cfcookies;
 
                     }
+
+
+                    watch.Stop();
+                    Console.WriteLine($"CF time: {watch.ElapsedMilliseconds} ms");
+                    watch.Start();
+
                 }
                 else if (proxy.proxyless == false)
                 {
@@ -338,9 +356,6 @@ namespace MARTOAIO
 
 
                 }
-                watch.Stop();
-                Console.WriteLine($"CF time: {watch.ElapsedMilliseconds} ms");
-                watch.Start();
 
                 //  await Login(id, client, account);
 
@@ -348,20 +363,22 @@ namespace MARTOAIO
                 await solerequests.Get(loginpage, client,loginpage ,false);
                 //Console.WriteLine(klk);
                 //watch.Stop();
-                //Program.printMsg("First login to get px time:" + watch.ElapsedMilliseconds + " ms");
+                //await printMsg("First login to get px time:" + watch.ElapsedMilliseconds + " ms");
                 //watch.Restart();
 
                 //Console.WriteLine(login);
                 if (dataatc == "")
                 {
+
                     dataatc = await GenatcAsync(id, url, pidd, size, productname, client);
                     watch.Stop();
-                    Program.printMsg("Gen ATC TIME:" + watch.ElapsedMilliseconds + " ms");
+                    await printMsgAsync("Gen ATC TIME:" + watch.ElapsedMilliseconds + " ms");
                     watch.Start();
+                    if (dataatc == "") Console.WriteLine("Task {0}---CAN'T GEN ATC!", id);
                 }
                 if (dataatc == "OOS") Console.WriteLine("Task {0}---SOLD OUT!", id);
                 else if (dataatc == "NOSIZE") Console.WriteLine("Task {0}---SIZE NOT VALID!", id);
-                else if (dataatc == "") Console.WriteLine("Task {0}---CAN'T GEN ATC!", id);
+                else if(dataatc=="ERROR") Console.WriteLine("Task {0}---ERROR GENATC!", id);
                 else
                    {
                     //Console.WriteLine(dataatc);
@@ -369,42 +386,43 @@ namespace MARTOAIO
                     var atcOut = await Atc(id, dataatc, url, imageurl, client);
 
                     atc = atcOut.added;
+
                     while (atc == false && retry< 0)
                     {
                         await Task.Delay(2000);
 
                         atcOut = await Atc(id, dataatc, url, imageurl, client);
                         atc = atcOut.added;
-                        Program.printMsg("Task " + id + "---ERROR ADDING TO CART!", "Red");
+                        await printMsgAsync("Task " + id + "---ERROR ADDING TO CART!", "Red");
                         retry++;
                     }
                     if (atc == true)
                     {
 
                         watch.Stop();
-                        Program.printMsg("Task " + id + "---ADDED TO CART!", "Green");
-                        Program.printMsg("Task " + id + ": ATC TIME :" + watch.ElapsedMilliseconds + " ms", "Green");
+                        await printMsgAsync("Task " + id + "---ADDED TO CART!", "Green");
+                        await printMsgAsync("Task " + id + ": ATC TIME :" + watch.ElapsedMilliseconds + " ms", "Green");
                         watch.Start();
 
-                        Program.printMsg("Task " + id + "---STARTING CHECKOUT ... ");
+                        await printMsgAsync("Task " + id + "---STARTING CHECKOUT ... ");
 
                         string checkouturl = await checkoutAsync(id, Info, payment, client);
 
                         watch.Stop();
 
-                        Program.printMsg("Task " + id + " Execution time: " + watch.ElapsedMilliseconds + " ms", "Green");
+                        await printMsgAsync("Task " + id + " Execution time: " + watch.ElapsedMilliseconds + " ms", "Green");
 
                         if (checkouturl != "")
                         { 
-                            Program.sendCheckout(checkouturl, atcOut.productname, size, atcOut.image, "SOLEBOX", watch.ElapsedMilliseconds, fast, proxy.proxyless, id);
+                            Program.sendCheckout(checkouturl, atcOut.productname, size, atcOut.image, "SOLEBOX", watch.ElapsedMilliseconds, mode, proxy.proxyless, id);
                         }
                         else
                         {
-                            Program.printMsg("Task " + id + "---Something Went wrong trying to checkout");
+                            await printMsgAsync("Task " + id + "---Something Went wrong trying to checkout");
 
                         }
                     }
-                    else Program.printMsg("Task " + id + "---Too many atc attempts");
+                    else await printMsgAsync("Task " + id + "---Too many atc attempts");
 
                    
                    
@@ -415,7 +433,7 @@ namespace MARTOAIO
             }
             catch (Exception e)
             {
-                Program.printMsg("Task " + id + "  " + e, "Red");
+                await printMsgAsync("Task " + id + "  " + e, "Red");
 
                 return 0;
             }
@@ -525,77 +543,91 @@ namespace MARTOAIO
                     sizeUrl.Append("&format=ajax");
                     string sizeUrldone = sizeUrl.ToString();
 
-                    Console.WriteLine(sizeUrldone);
+                    //Console.WriteLine(sizeUrldone);
 
             
-                    watch.Stop();
-                    Program.printMsg("Task " + id + "Stringbuilder time: " + watch.ElapsedMilliseconds + " ms", "Red");
+                  /*  watch.Stop();
+                    await printMsgAsync("Task " + id + "Stringbuilder time: " + watch.ElapsedMilliseconds + " ms", "Red");
                     watch.Restart();
-
+                    */
                     string srcsize = await solerequests.Get(sizeUrldone, client, url);
-                    watch.Stop();
-                    Program.printMsg("Task " + id + "First get time: " + watch.ElapsedMilliseconds + " ms", "Red");
+                   /* watch.Stop();
+                    await printMsgAsync("Task " + id + "First get time: " + watch.ElapsedMilliseconds + " ms", "Red");
                     watch.Restart();
-                    Console.WriteLine(srcsize);
+                    */
+                    //Console.WriteLine(srcsize);
                     productname = new Regex("\"productName\": \"(.+?)\"").Match(srcsize).Groups[1].Value;
 
-                    watch.Stop();
-                    Program.printMsg("Task " + id + "First regex time: " + watch.ElapsedMilliseconds + " ms", "Red");
+                   /* watch.Stop();
+                    await printMsgAsync("Task " + id + "First regex time: " + watch.ElapsedMilliseconds + " ms", "Red");
                     watch.Restart();
+                    */
 
                     if (srcsize.Contains("\"statusCode\": \"outofstock\""))
                     {
                         Console.WriteLine("Task {0}---ITEM IS SOLD OUT!", id);
                         return "OOS";
                     }
-                    else if (srcsize.Contains("//captcha.px-cdn.ne"))return "";
+                    else if (srcsize.Contains("//captcha.px-cdn.ne"))
+                    {
+                        await printMsgAsync("FAILED PX3", "Red");
+                        return "ERROR";
+                    }
 
                     string variant = new Regex("\"id\": \"(.+?)\"").Match(srcsize).Groups[1].Value;
-                    watch.Stop();
-                    Program.printMsg("Task " + id + "Find variant time: " + watch.ElapsedMilliseconds + " ms", "Red");
+
+                    /*watch.Stop();
+                    await printMsgAsync("Task " + id + "Find variant time: " + watch.ElapsedMilliseconds + " ms", "Red");
                     watch.Restart();
+                    */
 
-                    Program.printMsg("Task " + id + "---VARIANT: " + variant);
-                    //Console.WriteLine(variant);
-                    if (variant == pid)
-                    {
-                        return "NOSIZE";
-                    }
-                    else{
-
-                        StringBuilder data = new StringBuilder();
-                        data.Append("pid=");
-                        data.Append(variant);
-                        data.Append("&options=%5B%7B%22optionId%22%3A%22212%22%2C%22selectedValueId%22%3A%22");
-                        data.Append(size);
-                        data.Append("%22%7D%5D&quantity=1");
-                        return data.ToString();
-                    }
-
-
+                    await printMsgAsync("Task " + id + "---VARIANT: " + variant);
+                //Console.WriteLine(variant);
+                if (variant == pid)
+                {
+                    return "NOSIZE";
                 }
+                else if (variant == "") return "ERROR";
+                else
+                {
+
+                    StringBuilder data = new StringBuilder();
+                    data.Append("pid=");
+                    data.Append(variant);
+                    data.Append("&options=%5B%7B%22optionId%22%3A%22212%22%2C%22selectedValueId%22%3A%22");
+                    data.Append(size);
+                    data.Append("%22%7D%5D&quantity=1");
+                    return data.ToString();
+                }
+
+
+                    }
 
 
 
 
                 public static async Task<(bool added, string image, string productname)> Atc(string id, string postData, string url, string imageurl, HttpClient client)
                 {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                  
                     bool atc = false;
 
                     string referer;
-                    Console.WriteLine(postData);
+                    //Console.WriteLine(postData);
                     string target = "https://www.solebox.com/en_ES/add-product?format=ajax";
                     if (url == "") referer = "https://www.solebox.com/en_ES";
                     else referer = url;
 
-            //string accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
-            // string page = requests.Get(url, referer, cookies, false, accept, proxy);
+                    //string accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+                      // string page = requests.Get(url, referer, cookies, false, accept, proxy);
 
-            //await solerequests.Get(referer, client);
+                    string added = await solerequests.Post(target, postData, false, client, referer);
+                    //Console.WriteLine(added);
 
-                    
-                     string added = await solerequests.Post(target, postData, false, client, referer);
-              
+                     /*watch.Stop();
+                    await printMsgAsync("Task " + id + "ATC POST time: " + watch.ElapsedMilliseconds + " ms", "Red");
+                    watch.Restart();
+                    */
 
                     if (added.Contains("Product added to cart"))
                     {
@@ -603,7 +635,7 @@ namespace MARTOAIO
                     }
                     else
                     {
-                        Program.printMsg("Task " + id + "---ATC FAILED RESONSE :" , "Red");
+                        await printMsgAsync("Task " + id + "---ATC FAILED RESPONSE :" , "Red");
                         Console.WriteLine(added);
                         return (false, "", "");
 
@@ -620,6 +652,7 @@ namespace MARTOAIO
 
                     //string cart = "https://www.snipes.es/cart";
                     //page = requests.Get(cart, url, cookies, true, accept, proxy);
+                    watch.Stop();
 
                     return (atc, imageurl, productname);
 
@@ -630,11 +663,17 @@ namespace MARTOAIO
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            string checkoutlink = "https://www.solebox.com/en_ES/checkout?stage=shipping#shipping";
+            string checkoutlink = "https://www.solebox.com/en_ES/checkout";
             String source = await solerequests.Get(checkoutlink, client);
+
+          /*  watch.Stop();
+            await printMsgAsync("Task " + id + "first get checkout: " + watch.ElapsedMilliseconds + " ms", "Red");
+            watch.Restart();
+            */
+
             String token = new Regex("<input type=\"hidden\" name=\"csrf_token\" value=\"(.+?)\"").Match(source).Groups[1].Value;
 
-            Program.printMsg("Task " + id + "---CRSF TOKEN FOUND!");
+            await printMsgAsync("Task " + id + "---CRSF TOKEN FOUND!");
             //Console.WriteLine($"csrf_token ={token}");
 
             // string method = "https://www.snipes.es/on/demandware.store/Sites-snse-SOUTH-Site/es_ES/CheckoutShippingServices-SelectShippingMethod?format=ajax";
@@ -642,10 +681,13 @@ namespace MARTOAIO
 
             string UUID = new Regex("name=\"shipmentUUID\" type=\"hidden\" value=\"(.+?)\" />").Match(source).Groups[1].Value;
             //Console.WriteLine(source);
-
-            Program.printMsg("Task " + id + "---UUID FOUND!");
-           // Console.WriteLine("UUID : ");
-           // Console.WriteLine(UUID);
+           /* watch.Stop();
+            await printMsgAsync("Task " + id + "find UUI: " + watch.ElapsedMilliseconds + " ms", "Red");
+            watch.Restart();
+            */
+            //await printMsgAsync("Task " + id + "---UUID FOUND!");
+            // Console.WriteLine("UUID : ");
+            // Console.WriteLine(UUID);
 
             //VALIDATION OF SHIPPING, ITS A POST REQUEST WITH THE BASIC ADRESS , DOESN'T NEED IT TO CHECKOUT
 
@@ -658,7 +700,7 @@ namespace MARTOAIO
             //  await requests.POST(targetValidate, shipping, false, client);
             // Console.WriteLine("Task {0}---SHIPPING VALID!", id);
 
-            Program.printMsg("Task " + id + "---SUBMITTING SHIPPING...");
+            await printMsgAsync("Task " + id + "---SUBMITTING SHIPPING...");
 
 
 
@@ -708,22 +750,17 @@ namespace MARTOAIO
             data.Append(Info.Country);
             data.Append("&useAsBilling=true&format=ajax");  //maybe false 
             string selectShipping = data.ToString();
-            //Console.WriteLine(selectShipping);
 
-            string referer = "";
-
-            string targetship = "https://www.solebox.com/on/demandware.store/Sites-solebox-Site/en_ES/CheckoutShippingServices-SubmitShipping?region=europe&country="+ Info.Country + "&format=ajax";
-
+            string referer = "https://www.solebox.com/en_ES/checkout?stage=shipping";
             await solerequests.Post(selectShipping, "", false, client, referer, false);
 
-            //Console.WriteLine(responseups);
             
-            string shipp = GenShipping(token, UUID, ref Info);
+            string shipp =  GenShipping(token, UUID, ref Info);
 
-            string responseshipping = await solerequests.Post(targetship, shipp, false, client, referer, false);
+            string targetship = "https://www.solebox.com/on/demandware.store/Sites-solebox-Site/en_ES/CheckoutShippingServices-SubmitShipping?region=europe&country=" + Info.Country + "&format=ajax";
+            await solerequests.Post(targetship, shipp, false, client, referer, false);
 
-            // Console.WriteLine(responseshipping);
-            Program.printMsg("Task " + id + "---SHIPPING SUBMITTED!!!");
+            await printMsgAsync("Task " + id + "---SHIPPING SUBMITTED!!!");
 
 
             string target = "https://www.solebox.com/on/demandware.store/Sites-solebox-Site/en_ES/CheckoutServices-SubmitPayment?format=ajax";
@@ -731,7 +768,7 @@ namespace MARTOAIO
 
             await solerequests.Post(target, postData, false, client,referer, false);
 
-            Program.printMsg("Task " + id + "---PAYMENT SELECTED... ");
+            await printMsgAsync("Task " + id + "---PAYMENT SELECTED... ");
 
 
             target = "https://www.solebox.com/on/demandware.store/Sites-solebox-Site/en_ES/CheckoutServices-PlaceOrder?format=ajax";
@@ -742,12 +779,12 @@ namespace MARTOAIO
             string cancel = new Regex("cancelUrl\": \"(.+?)\"").Match(src).Groups[1].Value;
 
 
-            Program.printMsg("Task " + id + "---CHECKOUT URL FOUND!!");
+            await printMsgAsync("Task " + id + "---CHECKOUT URL FOUND!!");
 
 
             if (target == "")
             {
-                Program.printMsg("Task " + id + "---TARGET NOT FOUND!!!...", "Red");
+                await printMsgAsync("Task " + id + "---TARGET NOT FOUND!!!...", "Red");
                 Console.Write(src);
                 return "";
 
@@ -812,7 +849,7 @@ namespace MARTOAIO
                 //   await solerequests.Get(mainpage, client);
 
                 string referer = "https://www.solebox.com/en_ES/login";
-                Program.printMsg("Task " + id + "---Loggin in...");
+                await printMsgAsync("Task " + id + "---Loggin in...");
                 string loginpage = "https://www.solebox.com/en_ES/login?rurl=1";
 
                 string loginsrc = await solerequests.Get(loginpage, client);
@@ -831,7 +868,7 @@ namespace MARTOAIO
                 string pw = accountInfo[1];
 
 
-                Program.printMsg("Task " + id + "---Entering account : " + email);
+                await printMsgAsync("Task " + id + "---Entering account : " + email);
 
                 StringBuilder loginInfo = new StringBuilder();
                 loginInfo.Append("dwfrm_profile_customer_email=");
@@ -846,10 +883,10 @@ namespace MARTOAIO
                 //Console.WriteLine(logged);
                 if (logged.Contains("\"userLoginStatus\": true"))
                 {
-                    Program.printMsg("Task " + id + "---Logged in!!!", "Green");
+                    await printMsgAsync("Task " + id + "---Logged in!!!", "Green");
 
                 }
-                else Program.printMsg("Task " + id + "---CAN'T LOG IN", "Red");
+                else await printMsgAsync("Task " + id + "---CAN'T LOG IN", "Red");
 
 
 

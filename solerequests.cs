@@ -1,10 +1,11 @@
 ﻿
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-
+//using Newtonsoft.Json;
 namespace MARTOAIO
 {
     public class solerequests
@@ -17,7 +18,6 @@ namespace MARTOAIO
 
             try
             {
-                HttpResponseMessage resp = new HttpResponseMessage();
                 using (var reqmes = new HttpRequestMessage(HttpMethod.Get, url))
                 {
                     /*   reqmes.Headers.Add("authority", "www.snipes.es");
@@ -27,25 +27,29 @@ namespace MARTOAIO
                     //reqmes.Headers.Add("accept", accept);
                     reqmes.Headers.Add("accept-encoding", "gzip, deflate, br");
                     reqmes.Headers.Add("accept-language", "es,ca;q=0.9,en;q=0.8,de;q=0.7");
-                    reqmes.Headers.Add("sec-fetch-dest", "empty");
-                    reqmes.Headers.Add("sec-fetch-mode", "cors");
+                    reqmes.Headers.Add("sec-fetch-dest", "document");
+                    reqmes.Headers.Add("sec-fetch-mode", "navigate");
                     reqmes.Headers.Add("sec-fetch-site", "same-origin");
                     if(referer !="") reqmes.Headers.Add("referer", referer);
                    
-                  //  reqmes.Headers.TryAddWithoutValidation("content-type", "application/json");
+                    //  reqmes.Headers.TryAddWithoutValidation("content-type", "application/json");
                     //reqmes.Headers.Add("sec-fetch-user", "?1");
                     //  reqmes.Headers.Add("Cache-Control", "no-cache");
                     //reqmes.Headers.Add("UserAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36");
 
-                    resp =  await client.SendAsync(reqmes, HttpCompletionOption.ResponseHeadersRead);
+                    var resp =  await client.SendAsync(reqmes, HttpCompletionOption.ResponseHeadersRead);
+                    if (read == true)
+                    {
+                        var responseBody = await resp.Content.ReadAsStreamAsync();
+                        var sr = new StreamReader(responseBody);
+                        return await sr.ReadToEndAsync();
 
 
+                    }
+                    else return "";
+
                 }
-                if (read == true){
-                    var responseBody = await resp.Content.ReadAsStringAsync();
-                    return responseBody;
-                }
-                else return "";
+ 
 
 
 
@@ -91,7 +95,9 @@ namespace MARTOAIO
         {
             try
             {
-                HttpResponseMessage response = new HttpResponseMessage();
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                //response = new HttpResponseMessage();
                 using (var request = new HttpRequestMessage(HttpMethod.Post, _target))
                 {
                     /*   request.Headers.Add("authority", "www.snipes.es");
@@ -115,22 +121,27 @@ namespace MARTOAIO
                     //request.Headers.Add("UserAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36");
                     request.Headers.Add("x-requested-with", "XMLHttpRequest");
 
-
                     using (var stringContent = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded"))
                     {
                         request.Content = stringContent;
-                        response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
+                        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                        if (read == true)
+                        {
+                            /*var responseBody = await response.Content.ReadAsStreamAsync();
+                            var sr = new StreamReader(responseBody);
+                            return await sr.ReadToEndAsync();
+                            */
+                            return await response.Content.ReadAsStringAsync();
+                        }
+                        else return "";
                     }
                 }
 
-                if (read == true) return await response.Content.ReadAsStringAsync();
-                else return "";
 
             }
 
 
-            catch (WebException webExcp)
+           /* catch (WebException webExcp)
             {
                 Console.WriteLine("A WebException has been caught.");
                 Console.WriteLine(webExcp.ToString());
@@ -147,7 +158,7 @@ namespace MARTOAIO
                     Console.Write(_target);
                 }
                 return "";
-            }
+            }*/
             catch (Exception e)
             {
                 Console.WriteLine("{0} Exception caught.", e);

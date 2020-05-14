@@ -65,7 +65,7 @@ namespace MARTOAIO
             else if (store == "2")
             {
 
-                Holypop.holypop();
+                //Holypop.holypop();
 
 
             }
@@ -140,17 +140,15 @@ namespace MARTOAIO
 
 
 
-        public static void sendCheckout(string checkouturl, string productname , string size, string imageurl,string site ,long time = 0, bool fast = false, bool proxyless = true  , string id = "?")
+        public static void sendCheckout(string checkouturl, string productname , string size, string imageurl,string site ,long time = 0, string mode ="idk", bool proxyless = true  , string id = "?")
         {
             Console.WriteLine("SENDING LINK TO DISCORD ...");
 
             //ChromeDriver driver = new ChromeDriver();
             //driver.Navigate().GoToUrl(checkouturl);
             Random r = new Random();
-            string mode = "safe";
             string proxy = "proxyless";
           
-            if (fast == true) mode = "fast";
             if (proxyless == false) proxy = "using proxies";
             WebhookObject obj = new WebhookObject()
             {
@@ -237,9 +235,6 @@ namespace MARTOAIO
                         Webhook webhook = new Webhook("https://discordapp.com/api/webhooks/709001948807823373/ocIxvkiOBO7T0vDxn1J_AHi9uQv8vkTUUtlH3OF5Iu9N9RHHyMwcY8gHrKSen_3hxTaf");
                         webhook.PostData(obj);
                         sent = true;
-
-
-
                     }
                     else
                     {
@@ -249,7 +244,7 @@ namespace MARTOAIO
                         sent = true;
 
                     }
-                    Program.printMsg("Task " + id + "---CHECK DISCORD!!!--------------", "Green");
+                    printMsgAsync("Task " + id + "---CHECK DISCORD!!!--------------", "Green");
 
 
                 }
@@ -268,7 +263,7 @@ namespace MARTOAIO
 
         }
 
-        public static void printMsg(string msg, string c = "White")
+        public static async Task printMsgAsync(string msg, string c = "White")
         {
             DateTime now = DateTime.Now;
             switch (c)
@@ -277,21 +272,21 @@ namespace MARTOAIO
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.Write("[{0}]-", now.ToString("T"));
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Out.WriteLineAsync(msg);
+                    await Console.Out.WriteLineAsync(msg);
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     break;
                 case "Red":
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.Write("[{0}]-", now.ToString("T"));
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Out.WriteLineAsync(msg);
+                    await Console.Out.WriteLineAsync(msg);
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.Write("[{0}]-", now.ToString("T"));
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Out.WriteLineAsync(msg);
+                    await Console.Out.WriteLineAsync(msg);
                     break;
 
             }
