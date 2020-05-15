@@ -9,13 +9,17 @@ using static MARTOAIO.Program;
 using System.Collections.Generic;
 using System.Net.Http;
 using CloudflareSolverRe;
+using System.Reflection;
 
 namespace MARTOAIO
 {
+
     public class Solebox
     {
+
         public static async Task soleboxAsync()
         {
+
             System.Net.ServicePointManager.DefaultConnectionLimit = 50;
 
             string url = "", size = "", variant = "", method , dataatc = "", mode ,pid;
@@ -75,19 +79,12 @@ namespace MARTOAIO
 
            // if (usingproxy == "n") proxyless = true;
 
-
-
-
-
-
-
-
-
             try
             {
 
-                //READS ALL THE TASKS
+
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "tasks.csv");
+
                 string[] readlinestasks = System.IO.File.ReadAllLines(path);
                 Console.WriteLine(readlinestasks.Length);
                 string[][] tasks = new string[readlinestasks.Length-1][];
@@ -105,24 +102,25 @@ namespace MARTOAIO
                     
 
                 }
-                
 
 
+                path = Path.Combine(Directory.GetCurrentDirectory(), "profile.json");
                 var myJsonString = File.ReadAllText("profile.json");
                 Profile Info = JsonConvert.DeserializeObject<Profile>(myJsonString);
 
                 Console.WriteLine("perfil llegit");
 
 
-                path = Path.Combine(Directory.GetCurrentDirectory(), "Soleboxaccounts.txt");
-                string [] accounts =  System.IO.File.ReadAllLines(path);
-
+                
 
 
                 string[] proxys;
-    
-                    //string folderLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
+
+                //string folderLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                // path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "proxies.txt");
+               // path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+
+                 path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
 
                     proxys = System.IO.File.ReadAllLines(path);
 
@@ -359,73 +357,76 @@ namespace MARTOAIO
 
                 //  await Login(id, client, account);
 
-                string loginpage = "https://www.solebox.com/en_ES";
-                await solerequests.Get(loginpage, client,loginpage ,false);
-                //Console.WriteLine(klk);
+                    string loginpage = "https://www.solebox.com/en_ES";
+                    await solerequests.Get(loginpage, client,loginpage ,false);
+                    //Console.WriteLine(klk);
                 //watch.Stop();
                 //await printMsg("First login to get px time:" + watch.ElapsedMilliseconds + " ms");
                 //watch.Restart();
-
+                    bool monitor = false;
+                    while(monitor == false) { 
                 //Console.WriteLine(login);
-                if (dataatc == "")
-                {
-
-                    dataatc = await GenatcAsync(id, url, pidd, size, productname, client);
-                    watch.Stop();
-                    await printMsgAsync("Gen ATC TIME:" + watch.ElapsedMilliseconds + " ms");
-                    watch.Start();
-                    if (dataatc == "") Console.WriteLine("Task {0}---CAN'T GEN ATC!", id);
-                }
-                if (dataatc == "OOS") Console.WriteLine("Task {0}---SOLD OUT!", id);
-                else if (dataatc == "NOSIZE") Console.WriteLine("Task {0}---SIZE NOT VALID!", id);
-                else if(dataatc=="ERROR") Console.WriteLine("Task {0}---ERROR GENATC!", id);
-                else
-                   {
-                    //Console.WriteLine(dataatc);
-
-                    var atcOut = await Atc(id, dataatc, url, imageurl, client);
-
-                    atc = atcOut.added;
-
-                    while (atc == false && retry< 0)
+                    if (dataatc == "")
                     {
-                        await Task.Delay(2000);
+                        dataatc = await GenatcAsync(id, url, pidd, size, productname, client);
+                        //watch.Stop();
+                       // await printMsgAsync("Gen ATC TIME:" + watch.ElapsedMilliseconds + " ms");
+                      //  watch.Start();
+                        if (dataatc == "") Console.WriteLine("Task {0}---CAN'T GEN ATC!", id);
+                    }
+                    if (dataatc == "OOS") Console.WriteLine("Task {0}---SOLD OUT!", id);
+                    else if (dataatc == "NOSIZE") Console.WriteLine("Task {0}---SIZE NOT VALID!", id);
+                    else if (dataatc == "ERROR") Console.WriteLine("Task {0}---ERROR GENATC!", id);
+                    else
+                    {
+                        //Console.WriteLine(dataatc);
 
-                        atcOut = await Atc(id, dataatc, url, imageurl, client);
+                        var atcOut = await Atc(id, dataatc, url, imageurl, client);
+
                         atc = atcOut.added;
-                        await printMsgAsync("Task " + id + "---ERROR ADDING TO CART!", "Red");
-                        retry++;
-                    }
-                    if (atc == true)
-                    {
 
-                        watch.Stop();
-                        await printMsgAsync("Task " + id + "---ADDED TO CART!", "Green");
-                        await printMsgAsync("Task " + id + ": ATC TIME :" + watch.ElapsedMilliseconds + " ms", "Green");
-                        watch.Start();
-
-                        await printMsgAsync("Task " + id + "---STARTING CHECKOUT ... ");
-
-                        string checkouturl = await checkoutAsync(id, Info, payment, client);
-
-                        watch.Stop();
-
-                        await printMsgAsync("Task " + id + " Execution time: " + watch.ElapsedMilliseconds + " ms", "Green");
-
-                        if (checkouturl != "")
-                        { 
-                            Program.sendCheckout(checkouturl, atcOut.productname, size, atcOut.image, "SOLEBOX", watch.ElapsedMilliseconds, mode, proxy.proxyless, id);
-                        }
-                        else
+                        while (atc == false && retry < 0)
                         {
-                            await printMsgAsync("Task " + id + "---Something Went wrong trying to checkout");
+                            await Task.Delay(2000);
 
+                            atcOut = await Atc(id, dataatc, url, imageurl, client);
+                            atc = atcOut.added;
+                            await printMsgAsync("Task " + id + "---ERROR ADDING TO CART!", "Red");
+                            retry++;
                         }
-                    }
-                    else await printMsgAsync("Task " + id + "---Too many atc attempts");
+                        if (atc == true)
+                        {
+                            monitor = false;
+                            watch.Stop();
+                            await printMsgAsync("Task " + id + "---ADDED TO CART!", "Green");
+                            await printMsgAsync("Task " + id + ": ATC TIME :" + watch.ElapsedMilliseconds + " ms", "Green");
+                            watch.Start();
 
-                   
-                   
+                            await printMsgAsync("Task " + id + "---STARTING CHECKOUT ... ");
+
+                            string checkouturl = await checkoutAsync(id, Info, payment, client);
+
+                            watch.Stop();
+
+                            await printMsgAsync("Task " + id + " Execution time: " + watch.ElapsedMilliseconds + " ms", "Green");
+
+                            if (checkouturl != "")
+                            {
+                                Program.sendCheckout(checkouturl, atcOut.productname, size, atcOut.image, "SOLEBOX", watch.ElapsedMilliseconds, mode, proxy.proxyless, id);
+                            }
+                            else
+                            {
+                                await printMsgAsync("Task " + id + "---Something Went wrong trying to checkout");
+
+                            }
+                        }
+
+                    }
+                    //else await printMsgAsync("Task " + id + "---Too many atc attempts");
+
+                    await Task.Delay(2000);
+
+
                 }
                 return 1;
       
