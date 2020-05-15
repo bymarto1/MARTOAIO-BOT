@@ -82,7 +82,7 @@ public class requests
 
 
 
-    public static async Task<string> POST(String _target, string postData,  bool redirect, HttpClient client)
+    public static async Task<string> POST(String _target, string postData,  bool redirect, HttpClient client, bool read = true)
     {
         try {
 
@@ -110,17 +110,17 @@ public class requests
                 using (var stringContent = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded"))
                 {
                     request.Content = stringContent;
-
                     response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
              
                 }
             }
-
+            if (read == true) return await response.Content.ReadAsStringAsync();
+            else return "";
         //Console.
-        return await response.Content.ReadAsStringAsync();
+       
 
         }
-          catch (WebException webExcp)
+      /*    catch (WebException webExcp)
         {
             // If you reach this point, an exception has been caught.  
             Console.WriteLine("A WebException has been caught.");
@@ -142,6 +142,7 @@ public class requests
             }
             return "";
         }
+        */
         catch (Exception e)
         {
             Console.WriteLine("{0} Exception caught.", e);

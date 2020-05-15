@@ -19,7 +19,7 @@ namespace MARTOAIO
 
         public static async Task soleboxAsync()
         {
-
+            try { 
             System.Net.ServicePointManager.DefaultConnectionLimit = 50;
 
             string url = "", size = "", variant = "", method , dataatc = "", mode ,pid;
@@ -79,8 +79,7 @@ namespace MARTOAIO
 
            // if (usingproxy == "n") proxyless = true;
 
-            try
-            {
+    
 
 
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "tasks.csv");
@@ -116,13 +115,8 @@ namespace MARTOAIO
 
                 string[] proxys;
 
-                //string folderLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                // path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "proxies.txt");
-               // path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-
                  path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
-
-                    proxys = System.IO.File.ReadAllLines(path);
+                 proxys = System.IO.File.ReadAllLines(path);
 
                 //  System.Console.WriteLine("Contents of proxies.txt = ");
 
@@ -132,9 +126,6 @@ namespace MARTOAIO
                        Console.WriteLine("\t" + proxy);
                    }
                    */
-
-
-
 
                 ntasks = readlinestasks.Length - 1;
                 Task[] taskList = new Task[ntasks];
@@ -385,9 +376,9 @@ namespace MARTOAIO
 
                         atc = atcOut.added;
 
-                        while (atc == false && retry < 0)
+                        while (atc == false && retry < 5)
                         {
-                            await Task.Delay(2000);
+                            await Task.Delay(1000);
 
                             atcOut = await Atc(id, dataatc, url, imageurl, client);
                             atc = atcOut.added;
@@ -424,7 +415,7 @@ namespace MARTOAIO
                     }
                     //else await printMsgAsync("Task " + id + "---Too many atc attempts");
 
-                    await Task.Delay(2000);
+                    await Task.Delay(1000);
 
 
                 }

@@ -142,7 +142,7 @@ namespace MARTOAIO
 
         public static void sendCheckout(string checkouturl, string productname , string size, string imageurl,string site ,long time = 0, string mode ="idk", bool proxyless = true  , string id = "?")
         {
-            Console.WriteLine("SENDING LINK TO DISCORD ...");
+            //Console.WriteLine("SENDING LINK TO DISCORD ...");
 
             //ChromeDriver driver = new ChromeDriver();
             //driver.Navigate().GoToUrl(checkouturl);
