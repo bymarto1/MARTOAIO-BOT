@@ -53,7 +53,8 @@ namespace MARTOAIO
             Console.WriteLine("Holypopstore ----> type '2'");
             Console.WriteLine("Solebox ---------> type '3'");
 
-            string store = Console.ReadLine();
+            
+               string store = Console.ReadLine();
 
 
             if (store == "1")
@@ -73,12 +74,11 @@ namespace MARTOAIO
             else if(store == "3")
             {
                await Solebox.soleboxAsync();
-           
+
             }
-           
-                
-                // Display the total count for the downloaded websites.  
-            }
+            // Display the total count for the downloaded websites.  
+
+        }
 
 
 

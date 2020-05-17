@@ -278,10 +278,9 @@ namespace MARTOAIO
                 HttpClientHandler req = new HttpClientHandler()
                 {
                     AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip | DecompressionMethods.Brotli,
-                    CookieContainer = cookies
-
+                    CookieContainer = cookies,
+                    UseCookies = true
                 };
-                req.UseCookies = true; //<-- Enable the use of cookies.
 
                 HttpClient client = new HttpClient(req);
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Net;
 using System.IO;
 using static MARTOAIO.Program;
@@ -17,13 +16,11 @@ public class requests
 
         try
         {
-
-            HttpResponseMessage resp = new HttpResponseMessage();
             using (var reqmes = new HttpRequestMessage(HttpMethod.Get, url))
             {
 
-
-             /*   reqmes.Headers.Add("authority", "www.snipes.es");
+                /* 
+                reqmes.Headers.Add("authority", "www.snipes.es");
                 reqmes.Headers.Add("origin", "https://www.snipes.es");
                 reqmes.Headers.Add("scheme", "https");
                 */
@@ -37,23 +34,17 @@ public class requests
                 reqmes.Headers.Add("sec-fetch-mode", "navigate");
                 reqmes.Headers.Add("sec-fetch-site", "same-origin");
                 reqmes.Headers.Add("sec-fetch-user", "?1");
-              //  reqmes.Headers.Add("Cache-Control", "no-cache");
+                //  reqmes.Headers.Add("Cache-Control", "no-cache");
                 //reqmes.Headers.Add("UserAgent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36");
 
 
-                resp = await client.SendAsync(reqmes, HttpCompletionOption.ResponseHeadersRead);
+                HttpResponseMessage resp = await client.SendAsync(reqmes);
+                string responseBody = await resp.Content.ReadAsStringAsync();
+                return responseBody;
 
             }
-            var responseBody  = await resp.Content.ReadAsStringAsync();
 
-
-            return responseBody;
-
-
-
-            
-
-        }
+        }/*
         catch (WebException webExcp)
         {
             Console.WriteLine("A WebException has been caught.");
@@ -70,7 +61,7 @@ public class requests
 
             }
             return "";
-        }
+        }*/
         catch (Exception e)
         {
             Console.WriteLine("{0} Exception caught.", e);
@@ -87,7 +78,7 @@ public class requests
         try {
 
 
-            HttpResponseMessage response = new HttpResponseMessage();
+         
             using (var request = new HttpRequestMessage(HttpMethod.Post,_target))
             {
              /*   request.Headers.Add("authority", "www.snipes.es");
@@ -110,12 +101,13 @@ public class requests
                 using (var stringContent = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded"))
                 {
                     request.Content = stringContent;
-                    response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-             
+                    HttpResponseMessage response = await client.SendAsync(request);
+
+                    if (read == true) return await response.Content.ReadAsStringAsync();
+                    else return "";
                 }
             }
-            if (read == true) return await response.Content.ReadAsStringAsync();
-            else return "";
+
         //Console.
        
 
