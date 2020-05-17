@@ -41,6 +41,7 @@ namespace MARTOAIO
 
 
             Console.WriteLine("AUTOMATION AT ITS FINEST");
+            Console.WriteLine("V0.1.1");
             Console.WriteLine("@by_martori");
 
             Console.ForegroundColor = ConsoleColor.Cyan;

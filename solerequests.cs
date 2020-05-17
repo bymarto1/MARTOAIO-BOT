@@ -1,6 +1,8 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -16,8 +18,9 @@ namespace MARTOAIO
         public static async Task<string> Get(string url, HttpClient client,string referer = "" ,bool read = true)
         {
 
-            try
-            {
+            try { 
+
+
                 using (var reqmes = new HttpRequestMessage(HttpMethod.Get, url))
                 {
                     /*   reqmes.Headers.Add("authority", "www.snipes.es");
@@ -30,7 +33,9 @@ namespace MARTOAIO
                     reqmes.Headers.Add("sec-fetch-dest", "document");
                     reqmes.Headers.Add("sec-fetch-mode", "navigate");
                     reqmes.Headers.Add("sec-fetch-site", "same-origin");
-                    if(referer !="") reqmes.Headers.Add("referer", referer);
+                    reqmes.Headers.Add("Cookies", "_px3=73fedfa518276b717817a320a989c693c32d6706d16f59cadac556142da16a0f:9bYcACXlB9nOmjo8jll/JkiSc52JTMoCkyYTiuw10Jal8EPPrMgNPQ1PUp332NPxN7Xbczjf0LnH3ObfUPlv/A==:1000:F8Q/h0nasFDykyasGUTWl8rgXaXrh2+sjbRa8VQe7AS4YUeIF2wkShPXO60Mely8Q4VtQx6K7vrJQPDmirRgJ7/jXkvfYmDTUuWA+t920PHvjfyuslSMwe7c+YS4COaTHgGNg3vOMdMbkovkoQG5qg6zZVvj6BtbiDahDpSMp+c=");
+
+                    if (referer !="") reqmes.Headers.Add("referer", referer);
                    
                     //  reqmes.Headers.TryAddWithoutValidation("content-type", "application/json");
                     //reqmes.Headers.Add("sec-fetch-user", "?1");

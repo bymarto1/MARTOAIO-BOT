@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType></DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DiscordWebhooks" Version="1.0.4" />
+    <PackageReference Include="CloudflareSolverReNgosang" Version="1.0.7.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Properties\Solebox.cs" />
+    <Compile Remove="Holypop.cs" />
+    <Compile Remove="holyreq.cs" />
+  </ItemGroup>
+</Project>

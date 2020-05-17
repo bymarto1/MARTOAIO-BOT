@@ -38,7 +38,7 @@ namespace MARTOAIO
              //   size = Console.ReadLine();
                 pid = url.Substring(url.Length - 13 );
                 pid = pid.Substring(0, 8);
-                await printMsgAsync("pid: " + pid, "Green");
+                await printMsgAsync("pid:" + pid, "Green");
 
             }
             else
@@ -93,7 +93,7 @@ namespace MARTOAIO
                 }
 
                 
-                for (int i = 0; i < readlinestasks.Length- 1; ++i)
+                for (int i = 0; i < tasks.Length; ++i)
                 {   for(int j = 0; j<3; ++j)
                     {
                         Console.WriteLine(tasks[i][j]);
@@ -118,7 +118,7 @@ namespace MARTOAIO
                  path = Path.Combine(Directory.GetCurrentDirectory(), "proxies.txt");
                  proxys = System.IO.File.ReadAllLines(path);
 
-                //  System.Console.WriteLine("Contents of proxies.txt = ");
+                 System.Console.WriteLine("Contents of proxies.txt = ");
 
                 /*   foreach (string proxy in proxys)
                    {
@@ -127,7 +127,7 @@ namespace MARTOAIO
                    }
                    */
 
-                ntasks = readlinestasks.Length - 1;
+                ntasks = tasks.Length ;
                 Task[] taskList = new Task[ntasks];
 
                 //Console.WriteLine(pid);
@@ -267,16 +267,21 @@ namespace MARTOAIO
             string productname = "";
             string imageurl = "";
             int retry = 0;
+            Random r = new Random();
+
 
 
             try
             {
+                CookieContainer cookies = new CookieContainer();
 
                 HttpClientHandler req = new HttpClientHandler()
                 {
-                    AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip | DecompressionMethods.Brotli
+                    AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip | DecompressionMethods.Brotli,
+                    CookieContainer = cookies
 
                 };
+                req.UseCookies = true; //<-- Enable the use of cookies.
 
                 HttpClient client = new HttpClient(req);
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");
@@ -289,7 +294,7 @@ namespace MARTOAIO
                 //client.DefaultRequestHeaders.Add("content-type", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(30);
                 //  cloudflare(url, new WebProxy(), client, handler);
-                if (mode == "fast")
+                if (mode == "s")
                 {
                     if (proxy.proxyless == false)
                     {
@@ -348,14 +353,14 @@ namespace MARTOAIO
 
                 //  await Login(id, client, account);
 
-                    string loginpage = "https://www.solebox.com/en_ES";
-                    await solerequests.Get(loginpage, client,loginpage ,false);
-                    //Console.WriteLine(klk);
+                 string loginpage = url;
+                 string klk = await solerequests.Get(loginpage, client,loginpage);
+                //if (id == "0") Console.WriteLine(klk);
                 //watch.Stop();
                 //await printMsg("First login to get px time:" + watch.ElapsedMilliseconds + " ms");
                 //watch.Restart();
-                    bool monitor = false;
-                    while(monitor == false) { 
+                   bool monitor = true;
+                    while(monitor == true) { 
                 //Console.WriteLine(login);
                     if (dataatc == "")
                     {
@@ -365,12 +370,13 @@ namespace MARTOAIO
                       //  watch.Start();
                         if (dataatc == "") Console.WriteLine("Task {0}---CAN'T GEN ATC!", id);
                     }
-                    if (dataatc == "OOS") Console.WriteLine("Task {0}---SOLD OUT!", id);
-                    else if (dataatc == "NOSIZE") Console.WriteLine("Task {0}---SIZE NOT VALID!", id);
-                    else if (dataatc == "ERROR") Console.WriteLine("Task {0}---ERROR GENATC!", id);
+                    if (dataatc == "OOS") await printMsgAsync("Task " + id + "---SOLD OUT!", "Red");
+                    else if (dataatc == "NOSIZE") await printMsgAsync("Task " + id + "---SIZE NOT VALID", "Red");
+                    else if (dataatc == "ERROR") await printMsgAsync("Task " + id + "---CAN'T GEN ATC INFO!", "Red");
                     else
                     {
                         //Console.WriteLine(dataatc);
+
 
                         var atcOut = await Atc(id, dataatc, url, imageurl, client);
 
@@ -379,7 +385,6 @@ namespace MARTOAIO
                         while (atc == false && retry < 5)
                         {
                             await Task.Delay(1000);
-
                             atcOut = await Atc(id, dataatc, url, imageurl, client);
                             atc = atcOut.added;
                             await printMsgAsync("Task " + id + "---ERROR ADDING TO CART!", "Red");
@@ -414,8 +419,13 @@ namespace MARTOAIO
 
                     }
                     //else await printMsgAsync("Task " + id + "---Too many atc attempts");
-
-                    await Task.Delay(1000);
+                    dataatc = "";
+                    if (r.Next(10) == 1)
+                    {
+                        await solerequests.Get(url, client, loginpage, false);
+                        await printMsgAsync("Task " + id + "---MONITORING...");
+                    }
+                    await Task.Delay(2500);
 
 
                 }
@@ -482,6 +492,7 @@ namespace MARTOAIO
 
             if (!result.Success)
             {
+                Console.WriteLine("-------------------");
                 Console.WriteLine($"[Failed] Details: {result.FailReason}");
                 Console.WriteLine("-------------------");
 
@@ -491,6 +502,7 @@ namespace MARTOAIO
                 // Console.WriteLine(result.Cookies.AsHeaderString());
                 Console.WriteLine("-------------------");
                 Console.WriteLine(result.DetectResult.ToString());
+                Console.WriteLine("-------------------");
 
                 Console.WriteLine(result.Cookies.AsHeaderString());
 
@@ -557,12 +569,15 @@ namespace MARTOAIO
 
                     if (srcsize.Contains("\"statusCode\": \"outofstock\""))
                     {
-                        Console.WriteLine("Task {0}---ITEM IS SOLD OUT!", id);
+                        //Console.WriteLine("Task {0}---ITEM IS SOLD OUT!", id);
                         return "OOS";
                     }
                     else if (srcsize.Contains("//captcha.px-cdn.ne"))
                     {
-                        await printMsgAsync("FAILED PX3", "Red");
+                        Console.WriteLine("Task {0}---", id);
+                        Console.WriteLine("Task {0}---", srcsize);
+
+                        await printMsgAsync("Task " + id + "--FAILED PX3", "Red");
                         return "ERROR";
                     }
 
@@ -573,24 +588,29 @@ namespace MARTOAIO
                     watch.Restart();
                     */
 
-                    await printMsgAsync("Task " + id + "---VARIANT: " + variant);
-                //Console.WriteLine(variant);
-                if (variant == pid)
-                {
-                    return "NOSIZE";
-                }
-                else if (variant == "") return "ERROR";
-                else
-                {
+                    //Console.WriteLine(variant);
+                    if (variant == pid)
+                    {
+                        return "NOSIZE";
+                    }
+                    else if (variant == "")
+                    {
+                       // Console.WriteLine("Task {0}---", id);
+                       // Console.WriteLine("Task {0}---", srcsize);
+                        return "ERROR";
+                    }
+                    else
+                    {
 
-                    StringBuilder data = new StringBuilder();
-                    data.Append("pid=");
-                    data.Append(variant);
-                    data.Append("&options=%5B%7B%22optionId%22%3A%22212%22%2C%22selectedValueId%22%3A%22");
-                    data.Append(size);
-                    data.Append("%22%7D%5D&quantity=1");
-                    return data.ToString();
-                }
+                        await printMsgAsync("Task " + id + "---VARIANT: " + variant);
+                        StringBuilder data = new StringBuilder();
+                        data.Append("pid=");
+                        data.Append(variant);
+                        data.Append("&options=%5B%7B%22optionId%22%3A%22212%22%2C%22selectedValueId%22%3A%22");
+                        data.Append(size);
+                        data.Append("%22%7D%5D&quantity=1");
+                        return data.ToString();
+                    }
 
 
                     }
