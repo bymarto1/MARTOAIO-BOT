@@ -11,7 +11,7 @@ using CloudflareSolverRe;
 public class requests
 {
 
-    public static async Task<string> Get(string url, bool upgrade , HttpClient client )
+    public static async Task<string> Get(string url, bool upgrade, HttpClient client)
     {
 
         try
@@ -28,7 +28,7 @@ public class requests
                 reqmes.Headers.Add("accept-encoding", "gzip, deflate, br");
 
                 reqmes.Headers.Add("accept-language", "es,ca;q=0.9,en;q=0.8,de;q=0.7");
-               // reqmes.Headers.Add("referer", referer);
+                // reqmes.Headers.Add("referer", referer);
                 reqmes.Headers.Add("sec-fetch-dest", "document");
 
                 reqmes.Headers.Add("sec-fetch-mode", "navigate");
@@ -39,8 +39,13 @@ public class requests
 
 
                 HttpResponseMessage resp = await client.SendAsync(reqmes);
-                string responseBody = await resp.Content.ReadAsStringAsync();
-                return responseBody;
+                // string responseBody = await resp.Content.ReadAsStringAsync();
+                // return responseBody;
+                using (var streamReader = new StreamReader(await resp.Content.ReadAsStreamAsync()))
+                {
+                    return await streamReader.ReadToEndAsync();
+                }
+       
 
             }
 
@@ -73,18 +78,19 @@ public class requests
 
 
 
-    public static async Task<string> POST(String _target, string postData,  bool redirect, HttpClient client, bool read = true)
+    public static async Task<string> POST(String _target, string postData, bool redirect, HttpClient client, bool read = true)
     {
-        try {
+        try
+        {
 
 
-         
-            using (var request = new HttpRequestMessage(HttpMethod.Post,_target))
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, _target))
             {
-             /*   request.Headers.Add("authority", "www.snipes.es");
-                request.Headers.Add("origin", "https://www.snipes.es");
-                request.Headers.Add("scheme", "https");
-                */
+                /*   request.Headers.Add("authority", "www.snipes.es");
+                   request.Headers.Add("origin", "https://www.snipes.es");
+                   request.Headers.Add("scheme", "https");
+                   */
                 //request.Headers.Add("accept", "application/json, text/javascript, */*; q=0.01");
                 request.Headers.Add("accept-encoding", "gzip, deflate, br");
                 request.Headers.Add("accept-language", "es,ca;q=0.9,en;q=0.8,de;q=0.7");
@@ -103,38 +109,44 @@ public class requests
                     request.Content = stringContent;
                     HttpResponseMessage response = await client.SendAsync(request);
 
-                    if (read == true) return await response.Content.ReadAsStringAsync();
+                    if (read == true)
+                    {
+                        using (var streamReader = new StreamReader(await response.Content.ReadAsStreamAsync()))
+                        {
+                            return await streamReader.ReadToEndAsync();
+                        }
+                    }
                     else return "";
                 }
             }
 
-        //Console.
-       
+            //Console.
+
 
         }
-      /*    catch (WebException webExcp)
-        {
-            // If you reach this point, an exception has been caught.  
-            Console.WriteLine("A WebException has been caught.");
-            // Write out the WebException message.  
-            Console.WriteLine(webExcp.ToString());
-            // Get the WebException status code.  
-            WebExceptionStatus status = webExcp.Status;
-            // If status is WebExceptionStatus.ProtocolError,
-            //   there has been a protocol error and a WebResponse
-            //   should exist. Display the protocol error.  
-            if (status == WebExceptionStatus.ProtocolError)
-            {
-                Console.Write("The server returned protocol error ");
-                // Get HttpWebResponse so that you can check the HTTP status code.  
-                HttpWebResponse httpResponse = (HttpWebResponse)webExcp.Response;
-                Console.WriteLine((int)httpResponse.StatusCode + " - "
-                   + httpResponse.StatusCode);
-                Console.Write(_target);
-            }
-            return "";
-        }
-        */
+        /*    catch (WebException webExcp)
+          {
+              // If you reach this point, an exception has been caught.  
+              Console.WriteLine("A WebException has been caught.");
+              // Write out the WebException message.  
+              Console.WriteLine(webExcp.ToString());
+              // Get the WebException status code.  
+              WebExceptionStatus status = webExcp.Status;
+              // If status is WebExceptionStatus.ProtocolError,
+              //   there has been a protocol error and a WebResponse
+              //   should exist. Display the protocol error.  
+              if (status == WebExceptionStatus.ProtocolError)
+              {
+                  Console.Write("The server returned protocol error ");
+                  // Get HttpWebResponse so that you can check the HTTP status code.  
+                  HttpWebResponse httpResponse = (HttpWebResponse)webExcp.Response;
+                  Console.WriteLine((int)httpResponse.StatusCode + " - "
+                     + httpResponse.StatusCode);
+                  Console.Write(_target);
+              }
+              return "";
+          }
+          */
         catch (Exception e)
         {
             Console.WriteLine("{0} Exception caught.", e);
@@ -152,7 +164,7 @@ public class requests
 
 
 
-    public static string Getpay(string url, string referer, ref CookieContainer cookiespay, bool upgrade, string accept, bool redirect , Proxy proxy)
+    public static string Getpay(string url, string referer, ref CookieContainer cookiespay, bool upgrade, string accept, bool redirect, Proxy proxy)
     {
         HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
 
@@ -228,7 +240,7 @@ public class requests
 
 
 
-    public static string POSTpay(String _target, string postData, String referer, ref CookieContainer cookiespay, bool redirect, Proxy proxy )
+    public static string POSTpay(String _target, string postData, String referer, ref CookieContainer cookiespay, bool redirect, Proxy proxy)
     {
         HttpWebRequest req = (HttpWebRequest)WebRequest.Create(_target);
         req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
@@ -301,9 +313,5 @@ public class requests
 
         return finalResponse;
     }
+}
 
-
-
-
-
-    }
